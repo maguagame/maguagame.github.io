@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello Game!</title>
+    <style>
+        /* 页面整体样式 */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin-top: 50px;
+        }
+        
+        /* 游戏画布样式 */
+        canvas {
+            background-color: #34495e;
+            border: 4px solid #bdc3c7;
+            border-radius: 8px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        /* 计分板样式 */
+        #score-board {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        /* 操作说明 */
+        .instructions {
+            margin-top: 15px;
+            color: #95a5a6;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Hello Game 🕹️</h1>
+    <div id="score-board">得分: <span id="score">0</span></div>
+    
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    
+    <div class="instructions">
+        操作说明：使用键盘的 <strong>↑ ↓ ← →</strong> 方向键控制绿色方块移动，收集黄色方块！
+    </div>
+
+    <script>
+        // 获取画布和绘图上下文
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+
+        // 定义玩家属性
+        const player = {
+            x: 180,
+            y: 180,
+            size: 20,
+            color: '#2ecc71', // 绿色
+            speed: 5
+        };
+
+        // 定义目标（金币）属性
+        const target = {
+            x: Math.random() * (canvas.width - 20),
+            y: Math.random() * (canvas.height - 20),
+            size: 15,
+            color: '#f1c40f' // 黄色
+        };
+
+        let score = 0;
+        const keys = {};
+
+        // 监听键盘按下和抬起事件
+        window.addEventListener('keydown', (e) => { keys[e.key] = true; });
+        window.addEventListener('keyup', (e) => { keys[e.key] = false; });
+
+        // 游戏逻辑更新函数
+        function update() {
+            // 根据按键移动玩家，并防止移出画布边缘
+            if (keys['ArrowUp'] && player.y > 0) player.y -= player.speed;
+            if (keys['ArrowDown'] && player.y < canvas.height - player.size) player.y += player.speed;
+            if (keys['ArrowLeft'] && player.x > 0) player.x -= player.speed;
+            if (keys['ArrowRight'] && player.x < canvas.width - player.size) player.x += player.speed;
+
+            // 碰撞检测 (AABB 边界框碰撞检测)
+            if (player.x < target.x + target.size &&
+                player.x + player.size > target.x &&
+                player.y < target.y + target.size &&
+                player.y + player.size > target.y) {
+                
+                // 吃到了金币，得分增加
+                score++;
+                scoreElement.innerText = score;
+                
+                // 随机生成新的金币位置
+                target.x = Math.random() * (canvas.width - target.size);
+                target.y = Math.random() * (canvas.height - target.size);
+            }
+        }
+
+        // 游戏
